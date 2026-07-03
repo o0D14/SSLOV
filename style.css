@@ -1,0 +1,173 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Press Start 2P', monospace; /* Пиксельный шрифт */
+}
+
+body {
+    background-color: #222;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Главный экран игры (адаптация под телефон) */
+#game-screen {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    height: 100%;
+    max-height: 800px;
+    background-color: #000;
+    overflow: hidden;
+}
+
+/* Фон комнаты (на самый задний план) */
+#room-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+}
+
+#night-hint {
+    position: absolute;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    padding: 10px 12px;
+    background: rgba(0, 0, 0, 0.75);
+    color: #fff;
+    font-size: 10px;
+    text-align: center;
+    border: 2px solid #fff;
+    border-radius: 8px;
+    z-index: 4;
+    line-height: 1.4;
+}
+
+/* Панель индикаторов сверху */
+#status-bars {
+    position: absolute;
+    top: 20px;
+    left: 5%;
+    width: 90%;
+    z-index: 3;
+    background: rgba(255, 240, 200, 0.9);
+    padding: 10px;
+    border: 3px solid #5c4033;
+    border-radius: 5px;
+}
+
+.bar-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 10px;
+}
+
+.progress-bg {
+    width: 60%;
+    height: 15px;
+    background: #444;
+    border: 2px solid #222;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 100%; /* Изменяется динамически через JS */
+    transition: width 0.3s;
+}
+
+.fill-green { background-color: #4CAF50; }
+.fill-blue { background-color: #2196F3; }
+.fill-red { background-color: #F44336; }
+
+/* Панель статистики (компактная, находится внизу прямо над кнопками) */
+#stats-panel {
+    position: absolute;
+    bottom: 95px; 
+    right: 5%;
+    background: rgba(255, 240, 200, 0.9);
+    padding: 6px 10px; 
+    border: 2px solid #5c4033; 
+    font-size: 8px; 
+    z-index: 3;
+    text-align: center;
+    border-radius: 5px;
+}
+
+/* Кнопки действий на нижней панели */
+#action-buttons {
+    position: absolute;
+    bottom: 20px;
+    left: 5%;
+    width: 90%;
+    display: flex;
+    justify-content: space-around;
+    z-index: 3;
+}
+
+.action-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    background: #e0c9a3;
+    border: 4px solid #5c4033;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 2px 2px 0px #000;
+}
+
+.action-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: none;
+}
+
+.action-btn.disabled {
+    filter: grayscale(100%);
+    opacity: 0.5;
+}
+
+/* Диалоговое окно (опущено вниз, чтобы не закрывать лицо персонажа) */
+#dialog-box {
+    position: absolute;
+    top: 72%; 
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 85%;
+    background: #fff0c8;
+    border: 4px solid #5c4033;
+    padding: 15px; 
+    text-align: center;
+    z-index: 10;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.5);
+}
+
+#dialog-box p {
+    font-size: 11px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+
+.pixel-btn {
+    background: #ffb6c1;
+    border: 3px solid #5c4033;
+    padding: 10px;
+    font-size: 10px;
+    margin: 5px;
+    cursor: pointer;
+}
+
+/* Класс для скрытия элементов */
+.hidden {
+    display: none !important;
+}

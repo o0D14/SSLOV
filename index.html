@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#000000">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Тамагочи">
+    <title>Тамагочи</title>
+    <link rel="icon" href="icon.png" type="image/png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div id="game-screen">
+    <img id="room-bg" src="room_day.png" alt="Фон комнаты">
+
+    <div id="status-bars">
+        <div class="bar-container">
+            <span>ЕДА</span>
+            <div class="progress-bg"><div id="bar-food" class="progress-fill fill-green"></div></div>
+        </div>
+        <div class="bar-container">
+            <span>ВОДА</span>
+            <div class="progress-bg"><div id="bar-water" class="progress-fill fill-blue"></div></div>
+        </div>
+        <div class="bar-container">
+            <span>СЧАСТЬЕ</span>
+            <div class="progress-bg"><div id="bar-health" class="progress-fill fill-red"></div></div>
+        </div>
+    </div>
+
+    <div id="dialog-box" class="hidden">
+        <p id="dialog-text">Хочешь что-то сказать?</p>
+        <button id="btn-say-love" class="pixel-btn">Я люблю тебя</button>
+        <button id="btn-close-dialog" class="pixel-btn">Закрыть</button>
+    </div>
+
+    <div id="stats-panel">
+        <p>Дней прожито: <span id="days-count">0</span></p>
+        <p>Время: <span id="game-clock">12:00</span></p>
+        <button id="btn-save" class="pixel-btn">СОХРАНИТЬ</button>
+    </div>
+
+    <div id="night-hint" class="hidden"></div>
+
+    <div id="action-buttons">
+        <button id="btn-eat" class="action-btn">🍖</button>
+        <button id="btn-drink" class="action-btn">🥤</button>
+        <button id="btn-sleep" class="action-btn disabled">🛏️</button>
+        <button id="btn-msg" class="action-btn">💬</button>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
