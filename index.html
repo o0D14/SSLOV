@@ -45,20 +45,104 @@
     </div>
 
     <div id="stats-panel">
-        <p>Дней прожито: <span id="days-count">0</span></p>
+        <div id="coin-panel">
+            <span class="coin-icon">🪙</span>
+            <span id="coin-count">0</span>
+        </div>
+        <p id="days-line">Дней прожито: <span id="days-count">0</span></p>
         <p>Время: <span id="game-clock">12:00</span></p>
-        <button id="btn-save" class="pixel-btn">СОХРАНИТЬ</button>
     </div>
+
+    <div id="kitchen-inventory" class="hidden">
+        <span class="inventory-pill">🍖 <span id="inventory-food-count">0</span></span>
+        <span class="inventory-pill">🥤 <span id="inventory-water-count">0</span></span>
+    </div>
+    <div id="kitchen-message" class="hidden"></div>
 
     <div id="night-hint" class="hidden"></div>
 
     <div id="action-buttons">
         <button id="btn-kitchen" class="action-btn">🍽️</button>
+        <button id="btn-games" class="action-btn">🎮</button>
         <button id="btn-back-kitchen" class="action-btn hidden">⏪</button>
         <button id="btn-eat" class="action-btn hidden">🍖</button>
         <button id="btn-drink" class="action-btn hidden">🥤</button>
+        <button id="btn-shop" class="action-btn hidden">🛍️</button>
         <button id="btn-sleep" class="action-btn disabled">🛏️</button>
         <button id="btn-msg" class="action-btn">💬</button>
+    </div>
+
+    <div id="games-screen" class="hidden">
+        <div id="games-panel">
+            <p>Игры</p>
+            <button id="btn-space-battle" class="pixel-btn">Космический бой</button>
+            <button id="btn-close-games" class="pixel-btn">Назад</button>
+        </div>
+        <div id="space-game-screen" class="hidden">
+            <div id="space-game-panel">
+                <p>Космический бой</p>
+                <canvas id="space-game-canvas" width="320" height="240"></canvas>
+                <div id="space-game-controls">
+                    <button id="btn-move-left" class="pixel-btn">←</button>
+                    <button id="btn-move-down" class="pixel-btn">↓</button>
+                    <button id="btn-move-up" class="pixel-btn">↑</button>
+                    <button id="btn-move-right" class="pixel-btn">→</button>
+                </div>
+                <div id="space-game-actions">
+                    <button id="btn-fire" class="pixel-btn">СТРЕЛЯТЬ</button>
+                    <button id="btn-exit-space" class="pixel-btn">Выйти</button>
+                </div>
+                <p id="space-game-info">НЛО осталось: <span id="space-hit-count">0</span> | Для уничтожения 2 попадания</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="shop-intro-screen" class="shop-screen hidden">
+        <div class="shop-image-wrap">
+            <img class="shop-image" src="shopYL.png" alt="Магазин">
+            <div class="shop-dialog">
+                <p>Я нашла этот магазин!</p>
+                <button id="btn-enter-shop" class="pixel-btn">Зайти в магазин</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="shop-main-screen" class="shop-screen hidden">
+        <div class="shop-image-wrap">
+            <img class="shop-image" src="shop.png" alt="Магазин">
+            <div class="shop-dialog">
+                <p id="shop-dialog-text">Что купим?</p>
+                <button id="btn-view-shop-items" class="pixel-btn">Посмотреть</button>
+                <button id="btn-return-home" class="pixel-btn">Вернуться домой</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="shop-items-screen" class="shop-screen hidden">
+        <div class="shop-image-wrap">
+            <img class="shop-image" src="shop.png" alt="Магазин">
+            <div class="shop-dialog shop-dialog-panel">
+                <p>МАГАЗИН</p>
+                <div class="shop-item">
+                    <div class="shop-item-icon">🍖</div>
+                    <div class="shop-item-info">
+                        <p>Еда</p>
+                        <p>Цена: 1 монета</p>
+                    </div>
+                    <button id="btn-buy-food" class="pixel-btn small">Купить</button>
+                </div>
+                <div class="shop-item">
+                    <div class="shop-item-icon">🥤</div>
+                    <div class="shop-item-info">
+                        <p>Вода</p>
+                        <p>Цена: 1 монета</p>
+                    </div>
+                    <button id="btn-buy-water" class="pixel-btn small">Купить</button>
+                </div>
+                <p id="shop-status-text">Монет: 3 | Еды: 0 | Воды: 0</p>
+                <button id="btn-shop-back-home" class="pixel-btn">Вернуться домой</button>
+            </div>
+        </div>
     </div>
 </div>
 

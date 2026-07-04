@@ -53,6 +53,37 @@ body {
     line-height: 1.4;
 }
 
+#kitchen-inventory {
+    position: absolute;
+    top: 110px;
+    right: 5%;
+    display: flex;
+    gap: 8px;
+    z-index: 4;
+}
+
+#kitchen-message {
+    position: absolute;
+    top: 145px;
+    right: 5%;
+    background: rgba(255, 240, 200, 0.95);
+    border: 2px solid #5c4033;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 8px;
+    color: #000;
+    z-index: 4;
+}
+
+.inventory-pill {
+    background: rgba(255, 240, 200, 0.95);
+    border: 2px solid #5c4033;
+    border-radius: 999px;
+    padding: 6px 8px;
+    font-size: 8px;
+    color: #000;
+}
+
 /* Панель индикаторов сверху */
 #status-bars {
     position: absolute;
@@ -118,6 +149,189 @@ body {
     z-index: 3;
     text-align: center;
     border-radius: 5px;
+}
+
+#coin-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    font-size: 10px;
+    color: #000;
+}
+
+.coin-icon {
+    font-size: 12px;
+}
+
+#games-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+}
+
+.shop-screen {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    z-index: 30;
+}
+
+.shop-image-wrap {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.shop-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.shop-dialog {
+    position: absolute;
+    inset: auto 12px 12px 12px;
+    background: rgba(255, 240, 200, 0.95);
+    border: 4px solid #5c4033;
+    padding: 12px;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.25);
+}
+
+.shop-dialog p {
+    font-size: 10px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+}
+
+.shop-dialog-panel {
+    inset: 12px 12px auto 12px;
+    max-height: calc(100% - 24px);
+    overflow: auto;
+}
+
+.shop-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 0;
+    border-top: 2px dashed #5c4033;
+}
+
+.shop-item:first-of-type {
+    border-top: none;
+}
+
+.shop-item-icon {
+    font-size: 20px;
+}
+
+.shop-item-info p {
+    font-size: 8px;
+    line-height: 1.4;
+}
+
+.pixel-btn.small {
+    padding: 8px;
+    font-size: 8px;
+    margin: 0;
+}
+
+#games-panel {
+    width: 85%;
+    background: #fff0c8;
+    border: 4px solid #5c4033;
+    padding: 16px;
+    text-align: center;
+    border-radius: 10px;
+}
+
+#games-panel p {
+    margin-bottom: 12px;
+    font-size: 11px;
+}
+
+#games-panel .pixel-btn {
+    width: 100%;
+    margin-bottom: 8px;
+}
+
+#space-game-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 22;
+}
+
+#space-game-panel {
+    width: 90%;
+    max-width: 360px;
+    background: #080a1f;
+    border: 4px solid #8ac7ff;
+    padding: 12px;
+    border-radius: 10px;
+    color: #fff;
+    text-align: center;
+}
+
+#space-game-panel p {
+    margin-bottom: 8px;
+    font-size: 11px;
+}
+
+#space-game-canvas {
+    width: 100%;
+    height: auto;
+    background: #02030b;
+    display: block;
+    margin: 0 auto 10px;
+    border: 2px solid #5c5cff;
+}
+
+#space-game-controls {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+#space-game-controls .pixel-btn,
+#space-game-actions .pixel-btn {
+    width: 23%;
+}
+
+#space-game-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+#space-game-controls .pixel-btn,
+#space-game-actions .pixel-btn {
+    width: 32%;
 }
 
 /* Кнопки действий на нижней панели */
