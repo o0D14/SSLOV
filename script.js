@@ -175,14 +175,14 @@ function updateNightHint() {
 }
 
 // Функция для временной смены полноэкранной картинки действия
-function setTempImage(src, time = 2000) {
+function setTempImage(src, time = 2000, allowInKitchen = false) {
     const isNightTime = (
         gameHours < 9 ||
         gameHours > 22 ||
         (gameHours === 22 && gameMinutes > 0)
     );
 
-    if (petData.isSleeping || isNightTime || kitchenOpen) return;
+    if (petData.isSleeping || isNightTime || (kitchenOpen && !allowInKitchen)) return;
 
     actionImageActive = true;
     clearTimeout(actionImageTimer);
@@ -274,7 +274,7 @@ function sendReminder() {
 btnEat.addEventListener('click', () => {
     if (petData.isSleeping) return;
     petData.food = Math.min(100, petData.food + 20);
-    setTempImage("pet_eat.png", 2000);
+    setTempImage("pet_eat.png", 2000, true);
     updateUI();
 });
 
@@ -282,7 +282,7 @@ btnEat.addEventListener('click', () => {
 btnDrink.addEventListener('click', () => {
     if (petData.isSleeping) return;
     petData.water = Math.min(100, petData.water + 20);
-    setTempImage("pet_drink.png", 2000);
+    setTempImage("pet_drink.png", 2000, true);
     updateUI();
 });
 
