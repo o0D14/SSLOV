@@ -67,7 +67,7 @@ const inventoryWaterCount = document.getElementById('inventory-water-count');
 
 let reminderTimer = null;
 let kitchenOpen = false;
-let coins = 3;
+let coins = 10;
 let inSpaceGame = false;
 let kitchenMessageTimer = null;
 let saveTimer = null;
@@ -523,7 +523,9 @@ function openKitchen() {
     btnShop.classList.remove('hidden');
     btnSleep.classList.add('hidden');
     btnMsg.classList.add('hidden');
-    btnSave.classList.add('hidden');
+    if (btnSave) {
+        btnSave.classList.add('hidden');
+    }
     document.getElementById('days-line').classList.add('hidden');
     document.getElementById('kitchen-inventory').classList.remove('hidden');
     document.getElementById('kitchen-message').classList.add('hidden');
@@ -541,7 +543,9 @@ function closeKitchen() {
     btnShop.classList.add('hidden');
     btnSleep.classList.remove('hidden');
     btnMsg.classList.remove('hidden');
-    btnSave.classList.remove('hidden');
+    if (btnSave) {
+        btnSave.classList.remove('hidden');
+    }
     document.getElementById('days-line').classList.remove('hidden');
     document.getElementById('kitchen-inventory').classList.add('hidden');
     document.getElementById('kitchen-message').classList.add('hidden');
@@ -630,7 +634,7 @@ function buyItem(type) {
 function useInventoryItem(type) {
     if (type === 'food' && inventory.food > 0) {
         inventory.food -= 1;
-        petData.food = Math.min(100, petData.food + 25);
+        petData.food = Math.min(100, petData.food + 30);
         setTempImage('pet_eat.png', 2000, true);
         updateUI();
         saveData();
@@ -639,7 +643,7 @@ function useInventoryItem(type) {
 
     if (type === 'water' && inventory.water > 0) {
         inventory.water -= 1;
-        petData.water = Math.min(100, petData.water + 25);
+        petData.water = Math.min(100, petData.water + 30);
         setTempImage('pet_drink.png', 2000, true);
         updateUI();
         saveData();
@@ -866,11 +870,22 @@ function loadData() {
     const saved = localStorage.getItem('tamagotchiData');
     if (saved) {
         const parsed = JSON.parse(saved);
-        petData = parsed.petData || petData;
-        inventory = parsed.inventory || inventory;
-        coins = parsed.coins || coins;
-        gameHours = parsed.gameHours || gameHours;
-        gameMinutes = parsed.gameMinutes || gameMinutes;
+        petData = {
+            food: 100,
+            water: 100,
+            health: 100,
+            days: 0,
+            isSleeping: false,
+            ...(parsed.petData || {})
+        };
+        inventory = {
+            food: 0,
+            water: 0,
+            ...(parsed.inventory || {})
+        };
+        coins = Number.isFinite(parsed.coins) ? parsed.coins : coins;
+        gameHours = Number.isFinite(parsed.gameHours) ? parsed.gameHours : gameHours;
+        gameMinutes = Number.isFinite(parsed.gameMinutes) ? parsed.gameMinutes : gameMinutes;
         lastTimeMinutes = gameHours * 60 + gameMinutes;
     }
 }
