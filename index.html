@@ -24,14 +24,17 @@
         <div class="bar-container">
             <span>ЕДА</span>
             <div class="progress-bg"><div id="bar-food" class="progress-fill fill-green"></div></div>
+            <div class="bar-value" id="value-food">100</div>
         </div>
         <div class="bar-container">
             <span>ВОДА</span>
             <div class="progress-bg"><div id="bar-water" class="progress-fill fill-blue"></div></div>
+            <div class="bar-value" id="value-water">100</div>
         </div>
         <div class="bar-container">
             <span>СЧАСТЬЕ</span>
             <div class="progress-bg"><div id="bar-health" class="progress-fill fill-red"></div></div>
+            <div class="bar-value" id="value-health">100</div>
         </div>
     </div>
 
@@ -50,8 +53,10 @@
     <div id="night-hint" class="hidden"></div>
 
     <div id="action-buttons">
-        <button id="btn-eat" class="action-btn">🍖</button>
-        <button id="btn-drink" class="action-btn">🥤</button>
+        <button id="btn-kitchen" class="action-btn">🍽️</button>
+        <button id="btn-back-kitchen" class="action-btn hidden">⏪</button>
+        <button id="btn-eat" class="action-btn hidden">🍖</button>
+        <button id="btn-drink" class="action-btn hidden">🥤</button>
         <button id="btn-sleep" class="action-btn disabled">🛏️</button>
         <button id="btn-msg" class="action-btn">💬</button>
     </div>

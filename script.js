@@ -29,9 +29,13 @@ const btnEat = document.getElementById('btn-eat');
 const btnDrink = document.getElementById('btn-drink');
 const btnSleep = document.getElementById('btn-sleep');
 const btnMsg = document.getElementById('btn-msg');
+const btnKitchen = document.getElementById('btn-kitchen');
+const btnBackKitchen = document.getElementById('btn-back-kitchen');
 const btnSave = document.getElementById('btn-save');
 
 let reminderTimer = null;
+let kitchenOpen = false;
+const kitchenBg = 'pet_kohn.png';
 
 // Диалоговое окно
 const dialogBox = document.getElementById('dialog-box');
@@ -45,7 +49,7 @@ function init() {
     
     // Инициализация уведомлений
     initNotifications();
-    
+
     // 2. Запуск ускоренных игровых часов (каждую 1 секунду)
     updateClock();
     setInterval(updateClock, 1000);
@@ -93,7 +97,7 @@ function checkTimeOfDay() {
 
     baseBg = isNightTime ? "room_night.png" : "room_day.png";
     if (!actionImageActive) {
-        roomBg.src = baseBg;
+        roomBg.src = kitchenOpen ? kitchenBg : baseBg;
     }
 
     if (isNightTime) {
@@ -178,7 +182,7 @@ function setTempImage(src, time = 2000) {
         (gameHours === 22 && gameMinutes > 0)
     );
 
-    if (petData.isSleeping || isNightTime) return;
+    if (petData.isSleeping || isNightTime || kitchenOpen) return;
 
     actionImageActive = true;
     clearTimeout(actionImageTimer);
@@ -192,8 +196,30 @@ function setTempImage(src, time = 2000) {
 
 function updateRoomBackground() {
     if (!actionImageActive) {
-        roomBg.src = baseBg;
+        roomBg.src = kitchenOpen ? kitchenBg : baseBg;
     }
+}
+
+function openKitchen() {
+    kitchenOpen = true;
+    btnKitchen.classList.add('hidden');
+    btnBackKitchen.classList.remove('hidden');
+    btnEat.classList.remove('hidden');
+    btnDrink.classList.remove('hidden');
+    btnSleep.classList.add('hidden');
+    btnMsg.classList.add('hidden');
+    roomBg.src = kitchenBg;
+}
+
+function closeKitchen() {
+    kitchenOpen = false;
+    btnKitchen.classList.remove('hidden');
+    btnBackKitchen.classList.add('hidden');
+    btnEat.classList.add('hidden');
+    btnDrink.classList.add('hidden');
+    btnSleep.classList.remove('hidden');
+    btnMsg.classList.remove('hidden');
+    updateRoomBackground();
 }
 
 // Обновление полосок и текста статистики на экране
@@ -201,6 +227,9 @@ function updateUI() {
     barFood.style.width = petData.food + '%';
     barWater.style.width = petData.water + '%';
     barHealth.style.width = petData.health + '%';
+    document.getElementById('value-food').innerText = petData.food;
+    document.getElementById('value-water').innerText = petData.water;
+    document.getElementById('value-health').innerText = petData.health;
     daysCount.innerText = petData.days;
 }
 
@@ -255,6 +284,17 @@ btnDrink.addEventListener('click', () => {
     petData.water = Math.min(100, petData.water + 20);
     setTempImage("pet_drink.png", 2000);
     updateUI();
+});
+
+// Открыть кухню
+btnKitchen.addEventListener('click', () => {
+    if (petData.isSleeping) return;
+    openKitchen();
+});
+
+// Вернуться из кухни
+btnBackKitchen.addEventListener('click', () => {
+    closeKitchen();
 });
 
 // Кнопка Сна
