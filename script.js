@@ -3,6 +3,7 @@ let petData = {
     food: 100,
     water: 100,
     health: 100,
+    happiness: 100, // 😎 ВИТЯ: Добавили шкалу счастья в базу!
     days: 0,
     isSleeping: false
 };
@@ -12,12 +13,13 @@ let inventory = {
     water: 0
 };
 
-// --- ПЕРЕМЕННЫЕ ДЛЯ ИГРОВОГО ВРЕМЕНИ ---
-let gameHours = 12;   // Игра всегда начинается в 12:00 дня
+let gameHours = 12;   
 let gameMinutes = 0;
 
 // Привязка элементов интерфейса
 const roomBg = document.getElementById('room-bg');
+const petSprite = document.getElementById('pet-sprite');
+
 const barFood = document.getElementById('bar-food');
 const barWater = document.getElementById('bar-water');
 const barHealth = document.getElementById('bar-health');
@@ -26,7 +28,6 @@ const gameClock = document.getElementById('game-clock');
 const nightHint = document.getElementById('night-hint');
 
 let actionImageActive = false;
-let baseBg = 'room_day.png';
 let actionImageTimer = null;
 
 // Кнопки действий
@@ -67,6 +68,7 @@ const inventoryWaterCount = document.getElementById('inventory-water-count');
 
 let reminderTimer = null;
 let kitchenOpen = false;
+let shopOpen = false;
 let coins = 10;
 let inSpaceGame = false;
 let kitchenMessageTimer = null;
@@ -75,9 +77,7 @@ let lastTimeMinutes = null;
 let spaceGameState = null;
 let spaceGameAnimation = null;
 let spaceKeys = {};
-const kitchenBg = 'pet_kohn.png';
 
-// Диалоговое окно
 const dialogBox = document.getElementById('dialog-box');
 const dialogText = document.getElementById('dialog-text');
 const btnSayLove = document.getElementById('btn-say-love');
@@ -85,30 +85,18 @@ const btnCloseDialog = document.getElementById('btn-close-dialog');
 
 // --- ИНИЦИАЛИЗАЦИЯ И СТАРТ ИГРЫ ---
 function init() {
-    loadData(); // 1. Загружаем сохраненные данные
-
-    // Инициализация уведомлений
+    loadData(); 
     initNotifications();
-
-    // 2. Запуск ускоренных игровых часов (каждую 1 секунду)
     updateClock();
     setInterval(updateClock, 1000);
-
-    // 3. Жизненный цикл тамагочи (показатели падают каждые 5 секунд)
     setInterval(gameLoop, 5000);
-
-    // 4. Автосохранение каждые 10 секунд
     saveTimer = setInterval(saveData, 10000);
-
-    updateUI(); // 5. Сразу же отрисовываем полоски на экране!
+    updateUI(); 
+    updatePetState();
 }
 
-// --- СИСТЕМА ИГРОВОГО ВРЕМЕНИ (Сутки за 10 минут) ---
 function updateClock() {
     const previousTimeMinutes = gameHours * 60 + gameMinutes;
-
-    // Каждую секунду реального времени прибавляем игровые минуты
-    // Время идёт медленнее: +5 игровых минут за реальную секунду
     gameMinutes += 5;
 
     if (gameMinutes >= 60) {
@@ -128,97 +116,105 @@ function updateClock() {
     }
     lastTimeMinutes = newTimeMinutes;
 
-    // Красивое форматирование времени (например, "09:05")
     const displayHours = String(gameHours).padStart(2, '0');
     const displayMinutes = String(gameMinutes).padStart(2, '0');
-    
     gameClock.innerText = `${displayHours}:${displayMinutes}`;
 
-    // Проверяем день или ночь прямо во время хода часов
-    checkTimeOfDay();
-    updateNightHint();
-}
-
-// Автоматическая проверка смены дня и ночи
-function checkTimeOfDay() {
-    // Ночь начинается после 22:00 и длится до 07:00 утра по игровым часам
-    const isNightTime = (
-        gameHours < 7 ||
-        gameHours > 22 ||
-        (gameHours === 22 && gameMinutes > 0)
-    );
-
-    baseBg = isNightTime ? "room_night.png" : "room_day.png";
-    if (!actionImageActive) {
-        roomBg.src = kitchenOpen ? kitchenBg : baseBg;
-    }
-
+    const isNightTime = (gameHours < 7 || gameHours > 22 || (gameHours === 22 && gameMinutes > 0));
     if (isNightTime) {
-        btnSleep.classList.remove('disabled'); // Активируем кнопку сна
+        btnSleep.classList.remove('disabled'); 
     } else {
-        btnSleep.classList.add('disabled');    // Днём спать нельзя
-        
-        // Если наступило утро, а тамагочи ещё спит — будим автоматически
+        btnSleep.classList.add('disabled');    
         if (petData.isSleeping) {
             wakeUp(); 
         }
     }
 
-    return isNightTime;
+    updatePetState();
+    updateNightHint();
 }
 
-// --- ЖИЗНЕННЫЙ ЦИКЛ ТАМАГОЧИ ---
+// --- УПРАВЛЕНИЕ СПРАЙТОМ И ФОНОМ ---
+function updatePetState() {
+    const isNightTime = (gameHours < 7 || gameHours > 22 || (gameHours === 22 && gameMinutes > 0));
+
+    petSprite.classList.remove('hidden');
+
+    if (petData.isSleeping) {
+        roomBg.src = 'соняспит.png';
+        petSprite.classList.add('hidden');
+        
+    } else if (shopOpen) {
+        if (!shopIntroScreen.classList.contains('hidden')) {
+            roomBg.src = 'возлемагазина.png';
+            if (!actionImageActive) petSprite.src = 'соняпрыгает.png';
+        } else {
+            roomBg.src = 'магазин.png';
+            if (!actionImageActive) petSprite.src = 'сонястоит.png';
+        }
+        
+        petSprite.style.bottom = "20%";
+        petSprite.style.maxHeight = "60%";
+        petSprite.style.left = "50%";
+        
+    } else if (kitchenOpen) {
+        roomBg.src = 'кухня.png';
+        
+        if (!actionImageActive) {
+            petSprite.src = 'сонякухня.png';
+            petSprite.style.bottom = "-8%";    
+            petSprite.style.maxHeight = "80%"; 
+        }
+        petSprite.style.left = "50%";
+
+    } else {
+        roomBg.src = isNightTime ? 'ночькомната.png' : 'денькомната.png';
+        
+        if (!actionImageActive) {
+            if (petData.food < 40 || petData.water < 40) {
+                petSprite.src = 'соняплачет.png'; 
+            } else {
+                petSprite.src = 'сонястоит.png';
+            }
+        }
+        
+        petSprite.style.bottom = "25%"; 
+        petSprite.style.maxHeight = "50%";
+        petSprite.style.left = "50%";
+    }
+}
+
 function gameLoop() {
-    // Если тамагочи не спит, показатели плавно уменьшаются
     if (!petData.isSleeping) {
         petData.food -= 2;
         petData.water -= 2;
         petData.health -= 1;
-        
-        // Если показатели критические, подставляем грустную картинку
-        if (petData.food < 40 || petData.water < 40) {
-            petData.health -= 1;
-            const isNightTime = (
-                gameHours < 9 ||
-                gameHours > 22 ||
-                (gameHours === 22 && gameMinutes > 0)
-            );
-            if (!isNightTime) {
-                setTempImage('pet_sad.png', 1000);
-            }
-        }
+        petData.happiness -= 1; // 😉 Счастье тоже потихоньку уменьшается со временем
     } else {
-        // Во время сна здоровье и счастье восстанавливаются
-        if (petData.health < 100) {
-            petData.health = Math.min(100, petData.health + 10);
-        }
+        if (petData.health < 100) petData.health = Math.min(100, petData.health + 10);
+        if (petData.happiness < 100) petData.happiness = Math.min(100, petData.happiness + 2);
     }
 
-    // Рамки для шкал, чтобы они не уходили в минус или выше 100
     if (petData.food < 0) petData.food = 0;
     if (petData.water < 0) petData.water = 0;
     if (petData.health < 0) petData.health = 0;
+    if (petData.happiness < 0) petData.happiness = 0;
 
     updateUI();
     updateNightHint();
+    updatePetState();
     autoSaveState();
 }
 
 function updateNightHint() {
-    const isNightTime = (
-        gameHours < 7 ||
-        gameHours > 22 ||
-        (gameHours === 22 && gameMinutes > 0)
-    );
-
+    const isNightTime = (gameHours < 7 || gameHours > 22 || (gameHours === 22 && gameMinutes > 0));
     if (!isNightTime) {
         nightHint.classList.add('hidden');
         return;
     }
 
     const warnings = [];
-    if (petData.food < 40) warnings.push('Поесть нужно');
-    if (petData.water < 40) warnings.push('Попить нужно');
+    if (petData.food < 40) warnings.push('утром на кухню');
 
     if (warnings.length > 0) {
         nightHint.innerText = warnings.join(' и ');
@@ -228,293 +224,24 @@ function updateNightHint() {
     }
 }
 
-// Функция для временной смены полноэкранной картинки действия
-function setTempImage(src, time = 2000, allowInKitchen = false) {
-    const isNightTime = (
-        gameHours < 9 ||
-        gameHours > 22 ||
-        (gameHours === 22 && gameMinutes > 0)
-    );
-
-    if (petData.isSleeping || isNightTime || (kitchenOpen && !allowInKitchen)) return;
+function setTempImage(src, time = 2000) {
+    const isNightTime = (gameHours < 7 || gameHours > 22 || (gameHours === 22 && gameMinutes > 0));
+    if (petData.isSleeping || shopOpen || (isNightTime && !petData.isSleeping)) return;
 
     actionImageActive = true;
     clearTimeout(actionImageTimer);
-    roomBg.src = src;
+    petSprite.src = src;
 
     actionImageTimer = setTimeout(() => {
         actionImageActive = false;
-        updateRoomBackground();
+        updatePetState();
     }, time);
 }
 
-function updateRoomBackground() {
-    if (!actionImageActive) {
-        roomBg.src = kitchenOpen ? kitchenBg : baseBg;
-    }
-}
-
-function openGames() {
-    gamesScreen.classList.remove('hidden');
-    spaceGameScreen.classList.add('hidden');
-    document.getElementById('games-panel').classList.remove('hidden');
-}
-
-function closeGames() {
-    gamesScreen.classList.add('hidden');
-    exitSpaceGame();
-    document.getElementById('games-panel').classList.remove('hidden');
-}
-
-function openSpaceGame() {
-    inSpaceGame = true;
-    gamesScreen.classList.remove('hidden');
-    document.getElementById('games-panel').classList.add('hidden');
-    spaceGameScreen.classList.remove('hidden');
-    initSpaceGame();
-}
-
-function exitSpaceGame() {
-    inSpaceGame = false;
-    spaceGameScreen.classList.add('hidden');
-    gamesScreen.classList.add('hidden');
-    document.getElementById('games-panel').classList.remove('hidden');
-    spaceHitCount.innerText = '0';
-    spaceKeys = {};
-    if (spaceGameState && spaceGameState.ctx) {
-        spaceGameState.ctx.clearRect(0, 0, spaceGameState.width, spaceGameState.height);
-    }
-    spaceGameState = null;
-    if (spaceGameAnimation) {
-        cancelAnimationFrame(spaceGameAnimation);
-        spaceGameAnimation = null;
-    }
-    window.removeEventListener('keydown', handleSpaceKeyDown);
-    window.removeEventListener('keyup', handleSpaceKeyUp);
-}
-
-function addCoins(amount) {
-    coins = Math.max(0, coins + amount);
-    coinCount.innerText = coins;
-}
-
-function createUfoWave(width, height) {
-    const positions = [30, 90, 150, 210, 270, 330];
-    const shuffled = positions.sort(() => Math.random() - 0.5);
-    const minY = 20;
-    const maxY = Math.min(height * 0.55, height - 60);
-    return [
-        { x: shuffled[0], y: Math.random() * (maxY - minY) + minY, hits: 0, health: 2 },
-        { x: shuffled[1], y: Math.random() * (maxY - minY) + minY, hits: 0, health: 2 },
-        { x: shuffled[2], y: Math.random() * (maxY - minY) + minY, hits: 0, health: 2 }
-    ];
-}
-
-function initSpaceGame() {
-    const ctx = spaceGameCanvas.getContext('2d');
-    const width = spaceGameCanvas.width;
-    const height = spaceGameCanvas.height;
-
-    const starCount = 60;
-    const stars = [];
-    for (let i = 0; i < starCount; i++) {
-        stars.push({ x: Math.random() * width, y: Math.random() * height, size: Math.random() * 2 + 1, speed: Math.random() * 0.4 + 0.2 });
-    }
-
-    spaceGameState = {
-        ctx,
-        width,
-        height,
-        ship: { x: width / 2 - 12, y: height - 36, w: 24, h: 24, speed: 3, autoDown: 0.25, boostUp: 1.2, downSpeed: 1.2 },
-        bullets: [],
-        ufos: createUfoWave(width, height),
-        stars,
-        score: 0,
-        lastRender: null,
-        respawnTimer: null
-    };
-
-    window.addEventListener('keydown', handleSpaceKeyDown);
-    window.addEventListener('keyup', handleSpaceKeyUp);
-    drawSpaceGame();
-}
-
-function drawSpaceGame() {
-    if (!inSpaceGame || !spaceGameState) return;
-    const { ctx, width, height, ship, bullets, ufos, stars } = spaceGameState;
-
-    // Фон с звёздами
-    ctx.fillStyle = '#050817';
-    ctx.fillRect(0, 0, width, height);
-    ctx.fillStyle = '#fff';
-    stars.forEach((star) => {
-        star.y += star.speed;
-        if (star.y > height) {
-            star.y = 0;
-            star.x = Math.random() * width;
-        }
-        ctx.fillRect(star.x, star.y, star.size, star.size);
-    });
-
-    updateSpaceGame();
-
-    // Нарисовать корабль
-    ctx.fillStyle = '#7fffd4';
-    ctx.fillRect(ship.x + 8, ship.y, 8, 6);
-    ctx.fillRect(ship.x + 4, ship.y + 6, 16, 8);
-    ctx.fillStyle = '#00bfa5';
-    ctx.fillRect(ship.x + 10, ship.y + 8, 4, 6);
-
-    // Нарисовать пули
-    ctx.fillStyle = '#ffeb3b';
-    bullets.forEach((bullet) => {
-        ctx.fillRect(bullet.x, bullet.y, 4, 10);
-    });
-
-    // Нарисовать НЛО
-    ufos.forEach((ufo) => {
-        const body = ufo.health === 2 ? '#ff4d4d' : '#ffeb3b';
-        ctx.fillStyle = body;
-        ctx.fillRect(ufo.x, ufo.y, 28, 12);
-        ctx.fillStyle = '#000';
-        ctx.fillRect(ufo.x + 6, ufo.y + 4, 16, 4);
-        ctx.fillStyle = '#7fffd4';
-        ctx.fillRect(ufo.x + 4, ufo.y + 2, 4, 2);
-        ctx.fillRect(ufo.x + 20, ufo.y + 2, 4, 2);
-    });
-
-    ctx.fillStyle = '#fff';
-    ctx.font = '10px monospace';
-    ctx.fillText(`Монет: ${coins}`, 10, 14);
-    ctx.fillText(`НЛО осталось: ${spaceGameState.ufos.length}`, 10, 26);
-
-    if (inSpaceGame && spaceGameState) {
-        spaceGameAnimation = requestAnimationFrame(drawSpaceGame);
-    }
-}
-
-function fireBullet() {
-    if (!inSpaceGame || !spaceGameState) return;
-    const state = spaceGameState;
-    state.bullets.push({ x: state.ship.x + 11, y: state.ship.y - 10, speed: 6 });
-}
-
-function updateSpaceGame() {
-    const state = spaceGameState;
-    const { ship, bullets, ufos, width, height } = state;
-
-    if (spaceKeys.ArrowLeft) {
-        ship.x = Math.max(0, ship.x - ship.speed);
-    }
-    if (spaceKeys.ArrowRight) {
-        ship.x = Math.min(width - ship.w - 2, ship.x + ship.speed);
-    }
-    if (spaceKeys.ArrowUp) {
-        ship.y = Math.max(0, ship.y - ship.boostUp);
-    } else if (spaceKeys.ArrowDown) {
-        ship.y = Math.min(height - ship.h - 2, ship.y + ship.downSpeed);
-    } else {
-        ship.y = Math.min(height - ship.h - 2, ship.y + ship.autoDown);
-    }
-
-    state.bullets.forEach((bullet, index) => {
-        bullet.y -= bullet.speed;
-        if (bullet.y < -10) {
-            state.bullets.splice(index, 1);
-            return;
-        }
-
-        ufos.forEach((ufo, ufoIndex) => {
-            if (
-                bullet.x < ufo.x + 28 &&
-                bullet.x + 4 > ufo.x &&
-                bullet.y < ufo.y + 12 &&
-                bullet.y + 10 > ufo.y
-            ) {
-                ufo.health -= 1;
-                state.bullets.splice(index, 1);
-                if (ufo.health <= 0) {
-                    state.ufos.splice(ufoIndex, 1);
-                    addCoins(1);
-                }
-            }
-        });
-    });
-
-    state.ufos.forEach((ufo) => {
-        ufo.x += Math.cos(Date.now() / 400 + ufo.y) * 0.4;
-        ufo.y += Math.sin(Date.now() / 450 + ufo.x) * 0.3;
-        if (ufo.y < 10) ufo.y = 10;
-        if (ufo.y > height / 2) ufo.y = height / 2;
-        if (ufo.x < 0) ufo.x = 0;
-        if (ufo.x > width - 28) ufo.x = width - 28;
-    });
-
-    state.ufos.forEach((ufo) => {
-        if (
-            ship.x < ufo.x + 28 &&
-            ship.x + ship.w > ufo.x &&
-            ship.y < ufo.y + 12 &&
-            ship.y + ship.h > ufo.y
-        ) {
-            handleSpaceGameOver();
-        }
-    });
-
-    if (state.ufos.length === 0 && !state.respawnTimer) {
-        state.respawnTimer = setTimeout(() => {
-            state.ufos = createUfoWave(width, height);
-            state.respawnTimer = null;
-        }, 1200);
-    }
-
-    spaceHitCount.innerText = state.ufos.length;
-}
-
-function handleSpaceKeyDown(event) {
-    if (!inSpaceGame) return;
-    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space'].includes(event.code)) {
-        event.preventDefault();
-    }
-    if (event.code === 'Space') {
-        fireBullet();
-    }
-    spaceKeys[event.code] = true;
-}
-
-function handleSpaceKeyUp(event) {
-    if (!inSpaceGame) return;
-    spaceKeys[event.code] = false;
-}
-
-function handleTouchControl(direction) {
-    if (!inSpaceGame || !spaceGameState) return;
-    if (direction === 'left') {
-        spaceKeys.ArrowLeft = true;
-        setTimeout(() => { spaceKeys.ArrowLeft = false; }, 120);
-    }
-    if (direction === 'right') {
-        spaceKeys.ArrowRight = true;
-        setTimeout(() => { spaceKeys.ArrowRight = false; }, 120);
-    }
-    if (direction === 'down') {
-        spaceKeys.ArrowDown = true;
-        setTimeout(() => { spaceKeys.ArrowDown = false; }, 120);
-    }
-    if (direction === 'up') {
-        spaceKeys.ArrowUp = true;
-        setTimeout(() => { spaceKeys.ArrowUp = false; }, 120);
-    }
-}
-
-function handleSpaceGameOver() {
-    if (!inSpaceGame) return;
-    alert('Игра окончена! Вы столкнулись с НЛО.');
-    exitSpaceGame();
-}
-
+// --- МАГАЗИН И КУХНЯ ---
 function openKitchen() {
     kitchenOpen = true;
+    shopOpen = false;
     btnKitchen.classList.add('hidden');
     btnGames.classList.add('hidden');
     btnBackKitchen.classList.remove('hidden');
@@ -523,18 +250,18 @@ function openKitchen() {
     btnShop.classList.remove('hidden');
     btnSleep.classList.add('hidden');
     btnMsg.classList.add('hidden');
-    if (btnSave) {
-        btnSave.classList.add('hidden');
-    }
+    if (btnSave) btnSave.classList.add('hidden');
+    
     document.getElementById('days-line').classList.add('hidden');
     document.getElementById('kitchen-inventory').classList.remove('hidden');
-    document.getElementById('kitchen-message').classList.add('hidden');
-    roomBg.src = kitchenBg;
-    updateInventoryDisplay();
+    
+    hideShopScreens();
+    updatePetState();
 }
 
 function closeKitchen() {
     kitchenOpen = false;
+    shopOpen = false;
     btnKitchen.classList.remove('hidden');
     btnGames.classList.remove('hidden');
     btnBackKitchen.classList.add('hidden');
@@ -543,51 +270,19 @@ function closeKitchen() {
     btnShop.classList.add('hidden');
     btnSleep.classList.remove('hidden');
     btnMsg.classList.remove('hidden');
-    if (btnSave) {
-        btnSave.classList.remove('hidden');
-    }
+    if (btnSave) btnSave.classList.remove('hidden');
+    
     document.getElementById('days-line').classList.remove('hidden');
     document.getElementById('kitchen-inventory').classList.add('hidden');
     document.getElementById('kitchen-message').classList.add('hidden');
+    
     hideShopScreens();
-    updateRoomBackground();
+    updatePetState();
 }
 
-// Обновление полосок и текста статистики на экране
-function updateUI() {
-    barFood.style.width = petData.food + '%';
-    barWater.style.width = petData.water + '%';
-    barHealth.style.width = petData.health + '%';
-    document.getElementById('value-food').innerText = petData.food;
-    document.getElementById('value-water').innerText = petData.water;
-    document.getElementById('value-health').innerText = petData.health;
-    daysCount.innerText = petData.days;
-    coinCount.innerText = coins;
-    updateInventoryDisplay();
-}
-
-function updateInventoryDisplay() {
-    inventoryFoodCount.innerText = inventory.food;
-    inventoryWaterCount.innerText = inventory.water;
-    shopStatusText.innerText = `Монет: ${coins} | Еды: ${inventory.food} | Воды: ${inventory.water}`;
-}
-
-function showKitchenMessage(text) {
-    const messageBox = document.getElementById('kitchen-message');
-    messageBox.innerText = text;
-    messageBox.classList.remove('hidden');
-    if (kitchenMessageTimer) {
-        clearTimeout(kitchenMessageTimer);
-    }
-    kitchenMessageTimer = setTimeout(() => {
-        messageBox.classList.add('hidden');
-    }, 1800);
-}
-
-function showShopScreen(screen) {
-    hideShopScreens();
-    screen.classList.remove('hidden');
-}
+function openShopIntro() { shopOpen = true; hideShopScreens(); shopIntroScreen.classList.remove('hidden'); updatePetState(); }
+function openShopMain() { shopOpen = true; hideShopScreens(); shopMainScreen.classList.remove('hidden'); shopMainScreen.querySelector('#shop-dialog-text').innerText = 'Что купим?'; updatePetState(); }
+function openShopItems() { shopOpen = true; hideShopScreens(); shopItemsScreen.classList.remove('hidden'); updatePetState(); }
 
 function hideShopScreens() {
     shopIntroScreen.classList.add('hidden');
@@ -595,30 +290,11 @@ function hideShopScreens() {
     shopItemsScreen.classList.add('hidden');
 }
 
-function openShopIntro() {
-    showShopScreen(shopIntroScreen);
-}
-
-function openShopMain() {
-    showShopScreen(shopMainScreen);
-    shopMainScreen.querySelector('#shop-dialog-text').innerText = 'Что купим?';
-}
-
-function openShopItems() {
-    showShopScreen(shopItemsScreen);
-    updateInventoryDisplay();
-}
-
 function buyItem(type) {
     if (coins <= 0) {
-        if (type === 'food') {
-            shopStatusText.innerText = 'Не хватает монет для еды';
-        } else {
-            shopStatusText.innerText = 'Не хватает монет для воды';
-        }
+        shopStatusText.innerText = type === 'food' ? 'Не хватает монет для еды' : 'Не хватает монет для воды';
         return;
     }
-
     coins -= 1;
     if (type === 'food') {
         inventory.food += 1;
@@ -635,254 +311,324 @@ function useInventoryItem(type) {
     if (type === 'food' && inventory.food > 0) {
         inventory.food -= 1;
         petData.food = Math.min(100, petData.food + 30);
-        setTempImage('pet_eat.png', 2000, true);
+        petSprite.style.bottom = "20%";    
+        petSprite.style.maxHeight = "50%"; 
+        setTempImage('сонякушает.png', 2000); 
         updateUI();
         saveData();
         return true;
     }
-
     if (type === 'water' && inventory.water > 0) {
         inventory.water -= 1;
         petData.water = Math.min(100, petData.water + 30);
-        setTempImage('pet_drink.png', 2000, true);
+        petSprite.style.bottom = "28%";    
+        petSprite.style.maxHeight = "33%"; 
+        setTempImage('соняпьет.png', 2000);   
         updateUI();
         saveData();
         return true;
     }
-
     return false;
 }
 
-function initNotifications() {
-    if (!('Notification' in window)) {
-        return;
-    }
+// --- МИНИ-ИГРА КОСМОС ---
+function openGames() { gamesScreen.classList.remove('hidden'); spaceGameScreen.classList.add('hidden'); document.getElementById('games-panel').classList.remove('hidden'); }
+function closeGames() { gamesScreen.classList.add('hidden'); exitSpaceGame(); document.getElementById('games-panel').classList.remove('hidden'); }
+function openSpaceGame() { inSpaceGame = true; gamesScreen.classList.remove('hidden'); document.getElementById('games-panel').classList.add('hidden'); spaceGameScreen.classList.remove('hidden'); initSpaceGame(); }
 
-    if (Notification.permission === 'default') {
-        Notification.requestPermission().then(setupReminder);
-    } else {
-        setupReminder(Notification.permission);
-    }
+function exitSpaceGame() {
+    inSpaceGame = false;
+    spaceGameScreen.classList.add('hidden');
+    gamesScreen.classList.add('hidden');
+    document.getElementById('games-panel').classList.remove('hidden');
+    spaceHitCount.innerText = '0';
+    spaceKeys = {};
+    if (spaceGameState && spaceGameState.ctx) spaceGameState.ctx.clearRect(0, 0, spaceGameState.width, spaceGameState.height);
+    spaceGameState = null;
+    if (spaceGameAnimation) { cancelAnimationFrame(spaceGameAnimation); spaceGameAnimation = null; }
+    window.removeEventListener('keydown', handleSpaceKeyDown);
+    window.removeEventListener('keyup', handleSpaceKeyUp);
 }
 
-function setupReminder(permission) {
-    if (permission !== 'granted') {
-        return;
-    }
-
-    sendReminder();
-    reminderTimer = setInterval(sendReminder, 60000);
+function addCoins(amount) { coins = Math.max(0, coins + amount); coinCount.innerText = coins; }
+function createUfoWave(width, height) {
+    const positions = [30, 90, 150, 210, 270, 330];
+    const shuffled = positions.sort(() => Math.random() - 0.5);
+    return [
+        { x: shuffled[0], y: Math.random() * 80 + 20, health: 2 },
+        { x: shuffled[1], y: Math.random() * 80 + 20, health: 2 },
+        { x: shuffled[2], y: Math.random() * 80 + 20, health: 2 }
+    ];
 }
 
-function sendReminder() {
-    const message = 'Не забывай меня';
+function initSpaceGame() {
+    const ctx = spaceGameCanvas.getContext('2d');
+    const width = spaceGameCanvas.width;
+    const height = spaceGameCanvas.height;
+    const stars = [];
+    for (let i = 0; i < 60; i++) stars.push({ x: Math.random() * width, y: Math.random() * height, size: Math.random() * 2 + 1, speed: Math.random() * 0.4 + 0.2 });
 
-    if (Notification.permission === 'granted') {
-        new Notification('Тамагочи', {
-            body: message,
-            icon: 'icon.png'
+    spaceGameState = { ctx, width, height, ship: { x: width / 2 - 12, y: height - 36, w: 24, h: 24, speed: 3, autoDown: 0.25, boostUp: 1.2, downSpeed: 1.2 }, bullets: [], ufos: createUfoWave(width, height), stars, score: 0, respawnTimer: null };
+    window.addEventListener('keydown', handleSpaceKeyDown);
+    window.addEventListener('keyup', handleSpaceKeyUp);
+    drawSpaceGame();
+}
+
+// ... (отрисовка и логика космоса без изменений)
+function drawSpaceGame() {
+    if (!inSpaceGame || !spaceGameState) return;
+    const { ctx, width, height, ship, bullets, ufos, stars } = spaceGameState;
+
+    ctx.fillStyle = '#050817';
+    ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = '#fff';
+    stars.forEach((star) => {
+        star.y += star.speed;
+        if (star.y > height) { star.y = 0; star.x = Math.random() * width; }
+        ctx.fillRect(star.x, star.y, star.size, star.size);
+    });
+
+    updateSpaceGame();
+
+    ctx.fillStyle = '#7fffd4';
+    ctx.fillRect(ship.x + 8, ship.y, 8, 6);
+    ctx.fillRect(ship.x + 4, ship.y + 6, 16, 8);
+    ctx.fillStyle = '#00bfa5';
+    ctx.fillRect(ship.x + 10, ship.y + 8, 4, 6);
+
+    ctx.fillStyle = '#ffeb3b';
+    bullets.forEach((b) => ctx.fillRect(b.x, b.y, 4, 10));
+
+    ufos.forEach((ufo) => {
+        ctx.fillStyle = ufo.health === 2 ? '#ff4d4d' : '#ffeb3b';
+        ctx.fillRect(ufo.x, ufo.y, 28, 12);
+    });
+
+    ctx.fillStyle = '#fff';
+    ctx.font = '10px monospace';
+    ctx.fillText(`Монет: ${coins}`, 10, 14);
+    if (inSpaceGame && spaceGameState) spaceGameAnimation = requestAnimationFrame(drawSpaceGame);
+}
+
+function fireBullet() { if (inSpaceGame && spaceGameState) spaceGameState.bullets.push({ x: spaceGameState.ship.x + 11, y: spaceGameState.ship.y - 10, speed: 6 }); }
+
+function updateSpaceGame() {
+    const state = spaceGameState;
+    const { ship, bullets, ufos, width, height } = state;
+
+    if (spaceKeys.ArrowLeft) ship.x = Math.max(0, ship.x - ship.speed);
+    if (spaceKeys.ArrowRight) ship.x = Math.min(width - ship.w - 2, ship.x + ship.speed);
+    if (spaceKeys.ArrowUp) ship.y = Math.max(0, ship.y - ship.boostUp);
+    else if (spaceKeys.ArrowDown) ship.y = Math.min(height - ship.h - 2, ship.y + ship.downSpeed);
+    else ship.y = Math.min(height - ship.h - 2, ship.y + ship.autoDown);
+
+    bullets.forEach((bullet, index) => {
+        bullet.y -= bullet.speed;
+        if (bullet.y < -10) { bullets.splice(index, 1); return; }
+        ufos.forEach((ufo, ufoIndex) => {
+            if (bullet.x < ufo.x + 28 && bullet.x + 4 > ufo.x && bullet.y < ufo.y + 12 && bullet.y + 10 > ufo.y) {
+                ufo.health -= 1;
+                bullets.splice(index, 1);
+                if (ufo.health <= 0) { ufos.splice(ufoIndex, 1); addCoins(1); }
+            }
         });
-        return;
-    }
+    });
 
-    alert(message);
+    ufos.forEach((ufo) => {
+        if (ship.x < ufo.x + 28 && ship.x + ship.w > ufo.x && ship.y < ufo.y + 12 && ship.y + ship.h > ufo.y) {
+            alert('Игра окончена!');
+            exitSpaceGame();
+        }
+    });
+
+    if (ufos.length === 0 && !state.respawnTimer) {
+        state.respawnTimer = setTimeout(() => { state.ufos = createUfoWave(width, height); state.respawnTimer = null; }, 1200);
+    }
+    spaceHitCount.innerText = ufos.length;
 }
 
-// --- КНОПКИ ДЕЙСТВИЙ (ОБРАБОТЧИКИ) ---
+function handleSpaceKeyDown(e) { if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space'].includes(e.code)) e.preventDefault(); if (e.code === 'Space') fireBullet(); spaceKeys[e.code] = true; }
+function handleSpaceKeyUp(e) { spaceKeys[e.code] = false; }
+function handleTouchControl(dir) {
+    if (!inSpaceGame || !spaceGameState) return;
+    if (dir === 'left') { spaceKeys.ArrowLeft = true; setTimeout(() => spaceKeys.ArrowLeft = false, 120); }
+    if (dir === 'right') { spaceKeys.ArrowRight = true; setTimeout(() => spaceKeys.ArrowRight = false, 120); }
+    if (dir === 'down') { spaceKeys.ArrowDown = true; setTimeout(() => spaceKeys.ArrowDown = false, 120); }
+    if (dir === 'up') { spaceKeys.ArrowUp = true; setTimeout(() => spaceKeys.ArrowUp = false, 120); }
+}
 
-// Кормление
-btnEat.addEventListener('click', () => {
-    if (petData.isSleeping) return;
-    if (inventory.food > 0) {
-        useInventoryItem('food');
-    } else {
-        showKitchenMessage('Нет еды');
-    }
-    updateUI();
-});
-
-// Питьё
-btnDrink.addEventListener('click', () => {
-    if (petData.isSleeping) return;
-    if (inventory.water > 0) {
-        useInventoryItem('water');
-    } else {
-        showKitchenMessage('Нет воды');
-    }
-    updateUI();
-});
-
-// Открыть кухню
-btnKitchen.addEventListener('click', () => {
-    if (petData.isSleeping) return;
-    openKitchen();
-});
-
-// Открыть игры
-btnGames.addEventListener('click', () => {
-    if (petData.isSleeping) return;
-    openGames();
-});
-
-btnShop.addEventListener('click', () => {
-    if (petData.isSleeping) return;
-    openShopIntro();
-});
-
-btnEnterShop.addEventListener('click', () => {
-    openShopMain();
-});
-
-btnViewShopItems.addEventListener('click', () => {
-    openShopItems();
-});
-
-btnReturnHome.addEventListener('click', () => {
-    closeKitchen();
-});
-
-btnBuyFood.addEventListener('click', () => {
-    buyItem('food');
-});
-
-btnBuyWater.addEventListener('click', () => {
-    buyItem('water');
-});
-
-btnShopBackHome.addEventListener('click', () => {
-    closeKitchen();
-});
-
-// Вернуться из кухни
-btnBackKitchen.addEventListener('click', () => {
-    closeKitchen();
-});
-
-// Закрыть игры
-btnCloseGames.addEventListener('click', () => {
-    closeGames();
-});
-
-btnSpaceBattle.addEventListener('click', () => {
-    openSpaceGame();
-});
-
-btnMoveLeft.addEventListener('click', () => {
-    handleTouchControl('left');
-});
-
-btnMoveRight.addEventListener('click', () => {
-    handleTouchControl('right');
-});
-
-btnMoveDown.addEventListener('click', () => {
-    handleTouchControl('down');
-});
-
-btnMoveUp.addEventListener('click', () => {
-    handleTouchControl('up');
-});
-
-btnFire.addEventListener('click', () => {
-    fireBullet();
-});
-
-btnExitSpace.addEventListener('click', () => {
-    exitSpaceGame();
-});
-
-// Кнопка Сна
-btnSleep.addEventListener('click', () => {
-    const isNightTime = (
-        gameHours < 7 ||
-        gameHours > 22 ||
-        (gameHours === 22 && gameMinutes > 0)
-    );
+// --- ИНТЕРФЕЙС И КНОПКИ ---
+function updateUI() {
+        barFood.style.width = petData.food + '%';
+    barWater.style.width = petData.water + '%';
+    barHealth.style.width = petData.happiness + '%'; // Счастье теперь привязано к шкале здоровья
     
-    // Лечь спать можно только ночью и если тамагочи ещё не спит
+    document.getElementById('value-food').innerText = petData.food;
+    document.getElementById('value-water').innerText = petData.water;
+    document.getElementById('value-health').innerText = Math.round(petData.happiness); // Цифры счастья
+
+    daysCount.innerText = petData.days;
+    coinCount.innerText = coins;
+    updateInventoryDisplay();
+}
+
+function updateInventoryDisplay() {
+    inventoryFoodCount.innerText = inventory.food;
+    inventoryWaterCount.innerText = inventory.water;
+    shopStatusText.innerText = `Монет: ${coins} | Еды: ${inventory.food} | Воды: ${inventory.water}`;
+}
+
+function showKitchenMessage(text) {
+    const box = document.getElementById('kitchen-message');
+    box.innerText = text; box.classList.remove('hidden');
+    if (kitchenMessageTimer) clearTimeout(kitchenMessageTimer);
+    kitchenMessageTimer = setTimeout(() => box.classList.add('hidden'), 1800);
+}
+
+btnEat.addEventListener('click', () => { if (!petData.isSleeping && !useInventoryItem('food')) showKitchenMessage('Нет еды'); });
+btnDrink.addEventListener('click', () => { if (!petData.isSleeping && !useInventoryItem('water')) showKitchenMessage('Нет воды'); });
+
+btnKitchen.addEventListener('click', () => { 
+    const isNightTime = (gameHours < 7 || gameHours > 22 || (gameHours === 22 && gameMinutes > 0));
+    if (isNightTime) {
+        dialogBox.classList.remove('hidden');
+        btnSayLove.classList.add('hidden'); 
+        dialogText.innerText = "кисе пора спать а не кушать! 🌙";
+        return; 
+    }
+    if (!petData.isSleeping) openKitchen(); 
+});
+
+btnGames.addEventListener('click', () => { if (!petData.isSleeping) openGames(); });
+
+btnShop.addEventListener('click', () => { 
+    if (!petData.isSleeping) {
+        btnEat.classList.add('hidden');
+        btnDrink.classList.add('hidden');
+        btnBackKitchen.classList.add('hidden');
+        const kitchenInv = document.getElementById('kitchen-inventory');
+        if (kitchenInv) kitchenInv.classList.add('hidden');
+        openShopIntro(); 
+    }
+});
+
+btnEnterShop.addEventListener('click', openShopMain);
+btnViewShopItems.addEventListener('click', openShopItems);
+btnReturnHome.addEventListener('click', closeKitchen);
+btnBuyFood.addEventListener('click', () => buyItem('food'));
+btnBuyWater.addEventListener('click', () => buyItem('water'));
+btnShopBackHome.addEventListener('click', closeKitchen);
+btnBackKitchen.addEventListener('click', closeKitchen);
+btnCloseGames.addEventListener('click', closeGames);
+btnSpaceBattle.addEventListener('click', openSpaceGame);
+btnMoveLeft.addEventListener('click', () => handleTouchControl('left'));
+btnMoveRight.addEventListener('click', () => handleTouchControl('right'));
+btnMoveDown.addEventListener('click', () => handleTouchControl('up')); 
+btnMoveUp.addEventListener('click', () => handleTouchControl('down'));  
+btnFire.addEventListener('click', fireBullet);
+btnExitSpace.addEventListener('click', exitSpaceGame);
+
+// Сон
+btnSleep.addEventListener('click', () => {
+    const isNightTime = (gameHours < 7 || gameHours > 22 || (gameHours === 22 && gameMinutes > 0));
     if (isNightTime && !petData.isSleeping) {
         petData.isSleeping = true;
-        actionImageActive = true;
         btnSleep.classList.add('disabled');
-        roomBg.src = "pet_sleep.png"; // Полный фон со спящим питомцем
+        updatePetState();
         updateUI();
 
         setTimeout(() => {
             wakeUp();
-            actionImageActive = false;
             gameHours = 7;
             gameMinutes = 0;
-            checkTimeOfDay();
+            updatePetState();
             updateNightHint();
         }, 7000);
     }
 });
 
-// Пробуждение
 function wakeUp() {
     petData.isSleeping = false;
-    updateRoomBackground();
+    updatePetState();
     updateUI();
 }
 
-// Открытие окна сообщений
+// Открытие диалога через кнопку сообщений (с проверкой на ночь)
 btnMsg.addEventListener('click', () => {
     if (petData.isSleeping) return;
+
+    // Проверяем, ночь ли сейчас (с 22:01 до 6:59)
+    const isNightTime = (gameHours < 7 || gameHours > 22 || (gameHours === 22 && gameMinutes > 0));
+
     dialogBox.classList.remove('hidden');
-    btnSayLove.classList.remove('hidden'); // Показываем кнопку отправки текста
-    dialogText.innerText = "Хочешь что-то сказать?";
+
+    if (isNightTime) {
+        // Если ночь — прячем кнопку «Я люблю тебя»
+        btnSayLove.classList.add('hidden'); 
+        dialogText.innerText = "соня уже в ином мире... 🌙";
+    } else {
+        // Если день — показываем кнопку
+        btnSayLove.classList.remove('hidden'); 
+        dialogText.innerText = "что такое?";
+    }
 });
 
-// Кнопка отправки "Я люблю тебя"
+
+// === СТИЛИ И КНОПКА ПРЫЖКА (КОНЕЦ ФАЙЛА СФОРМАТИРОВАН) ===
+
+if (!document.getElementById('sonya-jump-style')) {
+    const style = document.createElement('style');
+    style.id = 'sonya-jump-style';
+    style.innerHTML = `
+        .sonya-jumping {
+            bottom: 35% !important;     
+            max-height: 75% !important;  
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// 😎 ВИТЯ: Вот она, твоя полностью идеальная кнопка!
 btnSayLove.addEventListener('click', () => {
-    petData.health = 100; // Восстанавливаем шкалу счастья/настроения на максимум
+    if (petData.isSleeping || actionImageActive) return; 
+
+    petData.happiness = 100; // Мгновенное счастье
+    btnSayLove.classList.add('hidden'); // Кнопка исчезает
+    dialogText.innerText = "Я тебя тоже очень люблю💝"; // Текст
     
-    // Включаем твою картинку с восклицательным знаком на 4 секунды
-    setTempImage("pet_love.png", 4000); 
-    
-    // Меняем текст на ответный
-    dialogText.innerText = "Я тебя тоже люблю💖";
-    btnSayLove.classList.add('hidden'); // Прячем кнопку, чтобы нельзя было нажать повторно
-    updateUI();
+    petSprite.classList.add('sonya-jumping');
+    setTempImage('соняпрыгает.png', 2000);
+
+    updateUI(); // Эта функция обновит полоску на экране
+    saveData();
+
+    setTimeout(() => {
+        petSprite.classList.remove('sonya-jumping');
+    }, 2000);
 });
 
-// Закрытие окна диалога
-btnCloseDialog.addEventListener('click', () => {
-    dialogBox.classList.add('hidden');
-});
 
-// --- СОХРАНЕНИЕ И ЗАГРУЗКА ИЗ ПАМЯТИ ---
-function autoSaveState() {
-    localStorage.setItem('tamagotchiData', JSON.stringify({
-        petData,
-        inventory,
-        coins,
-        gameHours,
-        gameMinutes
-    }));
+btnCloseDialog.addEventListener('click', () => dialogBox.classList.add('hidden'));
+
+function initNotifications() {
+    if (!('Notification' in window)) return;
+    if (Notification.permission === 'default') {
+        Notification.requestPermission().then(p => { if (p === 'granted') reminderTimer = setInterval(sendReminder, 60000); });
+    } else if (Notification.permission === 'granted') {
+        reminderTimer = setInterval(sendReminder, 60000);
+    }
 }
+function sendReminder() { if (Notification.permission === 'granted') new Notification('Тамагочи', { body: 'Не забывай меня', icon: 'icon.png' }); }
 
-function saveData() {
-    autoSaveState();
-}
-
+function autoSaveState() { localStorage.setItem('tamagotchiData', JSON.stringify({ petData, inventory, coins, gameHours, gameMinutes })); }
+function saveData() { autoSaveState(); }
 function loadData() {
     const saved = localStorage.getItem('tamagotchiData');
     if (saved) {
         const parsed = JSON.parse(saved);
-        petData = {
-            food: 100,
-            water: 100,
-            health: 100,
-            days: 0,
-            isSleeping: false,
-            ...(parsed.petData || {})
-        };
-        inventory = {
-            food: 0,
-            water: 0,
-            ...(parsed.inventory || {})
-        };
+        // Загружаем данные и страхуемся, чтобы счастье по дефолту было 100
+        petData = { food: 100, water: 100, health: 100, happiness: 100, days: 0, isSleeping: false, ...(parsed.petData || {}) };
+        inventory = { food: 0, water: 0, ...(parsed.inventory || {}) };
         coins = Number.isFinite(parsed.coins) ? parsed.coins : coins;
         gameHours = Number.isFinite(parsed.gameHours) ? parsed.gameHours : gameHours;
         gameMinutes = Number.isFinite(parsed.gameMinutes) ? parsed.gameMinutes : gameMinutes;
@@ -890,9 +636,5 @@ function loadData() {
     }
 }
 
-if (btnSave) {
-    btnSave.remove();
-}
-
-// Запуск кода при старте страницы
+if (btnSave) btnSave.remove();
 init();

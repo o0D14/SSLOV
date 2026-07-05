@@ -17,8 +17,10 @@
 </head>
 <body>
 
-<div id="game-screen">
-    <img id="room-bg" src="room_day.png" alt="Фон комнаты">
+<div id="game-screen" style="position: relative; overflow: hidden;">
+    <img id="room-bg" src="денькомната.png" alt="Фон игры">
+    
+    <img id="pet-sprite" src="сонястоит.png" alt="Соня" style="position: absolute; left: 50%; transform: translateX(-50%); z-index: 5; object-fit: contain;">
 
     <div id="status-bars">
         <div class="bar-container">
@@ -39,8 +41,8 @@
     </div>
 
     <div id="dialog-box" class="hidden">
-        <p id="dialog-text">Хочешь что-то сказать?</p>
-        <button id="btn-say-love" class="pixel-btn">Я люблю тебя</button>
+        <p id="dialog-text">что такое?</p>
+        <button id="btn-say-love" class="pixel-btn">Я люблю тебя кисонька</button>
         <button id="btn-close-dialog" class="pixel-btn">Закрыть</button>
     </div>
 
@@ -54,8 +56,8 @@
     </div>
 
     <div id="kitchen-inventory" class="hidden">
-        <span class="inventory-pill">🍖 <span id="inventory-food-count">0</span></span>
-        <span class="inventory-pill">🥤 <span id="inventory-water-count">0</span></span>
+        <span class="inventory-pill">🍙 <span id="inventory-food-count">0</span></span>
+        <span class="inventory-pill">🥛 <span id="inventory-water-count">0</span></span>
     </div>
     <div id="kitchen-message" class="hidden"></div>
 
@@ -64,11 +66,11 @@
     <div id="action-buttons">
         <button id="btn-kitchen" class="action-btn">🍽️</button>
         <button id="btn-games" class="action-btn">🎮</button>
-        <button id="btn-back-kitchen" class="action-btn hidden">⏪</button>
-        <button id="btn-eat" class="action-btn hidden">🍖</button>
-        <button id="btn-drink" class="action-btn hidden">🥤</button>
+        <button id="btn-back-kitchen" class="action-btn hidden">🔙</button>
+        <button id="btn-eat" class="action-btn hidden">🍙</button>
+        <button id="btn-drink" class="action-btn hidden">🥛</button>
         <button id="btn-shop" class="action-btn hidden">🛍️</button>
-        <button id="btn-sleep" class="action-btn disabled">🛏️</button>
+        <button id="btn-sleep" class="action-btn disabled">💤</button>
         <button id="btn-msg" class="action-btn">💬</button>
     </div>
 
@@ -98,50 +100,41 @@
     </div>
 
     <div id="shop-intro-screen" class="shop-screen hidden">
-        <div class="shop-image-wrap">
-            <img class="shop-image" src="shopYL.png" alt="Магазин">
-            <div class="shop-dialog">
-                <p>Я нашла этот магазин!</p>
-                <button id="btn-enter-shop" class="pixel-btn">Зайти в магазин</button>
-            </div>
+        <div class="shop-dialog">
+            <p>наконец то я нашла этот магазин!</p>
+            <button id="btn-enter-shop" class="pixel-btn">Зайти в магазин</button>
         </div>
     </div>
 
     <div id="shop-main-screen" class="shop-screen hidden">
-        <div class="shop-image-wrap">
-            <img class="shop-image" src="shop.png" alt="Магазин">
-            <div class="shop-dialog">
-                <p id="shop-dialog-text">Что купим?</p>
-                <button id="btn-view-shop-items" class="pixel-btn">Посмотреть</button>
-                <button id="btn-return-home" class="pixel-btn">Вернуться домой</button>
-            </div>
+        <div class="shop-dialog">
+            <p id="shop-dialog-text">Что купим?</p>
+            <button id="btn-view-shop-items" class="pixel-btn">Посмотреть</button>
+            <button id="btn-return-home" class="pixel-btn">Вернуться домой</button>
         </div>
     </div>
 
     <div id="shop-items-screen" class="shop-screen hidden">
-        <div class="shop-image-wrap">
-            <img class="shop-image" src="shop.png" alt="Магазин">
-            <div class="shop-dialog shop-dialog-panel">
-                <p>МАГАЗИН</p>
-                <div class="shop-item">
-                    <div class="shop-item-icon">🍖</div>
-                    <div class="shop-item-info">
-                        <p>Еда</p>
-                        <p>Цена: 1 монета</p>
-                    </div>
-                    <button id="btn-buy-food" class="pixel-btn small">Купить</button>
+        <div class="shop-dialog shop-dialog-panel">
+            <p>МАГАЗИН</p>
+            <div class="shop-item">
+                <div class="shop-item-icon">🍖</div>
+                <div class="shop-item-info">
+                    <p>Еда</p>
+                    <p>Цена: 1 монета</p>
                 </div>
-                <div class="shop-item">
-                    <div class="shop-item-icon">🥤</div>
-                    <div class="shop-item-info">
-                        <p>Вода</p>
-                        <p>Цена: 1 монета</p>
-                    </div>
-                    <button id="btn-buy-water" class="pixel-btn small">Купить</button>
-                </div>
-                <p id="shop-status-text">Монет: 3 | Еды: 0 | Воды: 0</p>
-                <button id="btn-shop-back-home" class="pixel-btn">Вернуться домой</button>
+                <button id="btn-buy-food" class="pixel-btn small">Купить</button>
             </div>
+            <div class="shop-item">
+                <div class="shop-item-icon">🥤</div>
+                <div class="shop-item-info">
+                    <p>Вода</p>
+                    <p>Цена: 1 монета</p>
+                </div>
+                <button id="btn-buy-water" class="pixel-btn small">Купить</button>
+            </div>
+            <p id="shop-status-text">Монет: 3 | Еды: 0 | Воды: 0</p>
+            <button id="btn-shop-back-home" class="pixel-btn">Вернуться домой</button>
         </div>
     </div>
 </div>

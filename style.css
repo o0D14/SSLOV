@@ -36,6 +36,16 @@ body {
     z-index: 1;
 }
 
+/* Главный спрайт Сони в style.css */
+#pet-sprite {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 2;
+    object-fit: contain;
+    pointer-events: none; /* <-- ДОБАВЬ ЭТУ СТРОЧКУ */
+}
+
 #night-hint {
     position: absolute;
     bottom: 90px;
@@ -178,10 +188,11 @@ body {
     z-index: 20;
 }
 
+/* Окна магазина (теперь прозрачные, чтобы видеть фоны из JS) */
 .shop-screen {
     position: absolute;
     inset: 0;
-    background: rgba(0, 0, 0, 0.95);
+    background: transparent; 
     display: flex;
     align-items: center;
     justify-content: center;
@@ -319,7 +330,7 @@ body {
 
 #space-game-controls .pixel-btn,
 #space-game-actions .pixel-btn {
-    width: 23%;
+    width: 32%;
 }
 
 #space-game-actions {
@@ -327,11 +338,6 @@ body {
     justify-content: space-between;
     gap: 8px;
     margin-bottom: 10px;
-}
-
-#space-game-controls .pixel-btn,
-#space-game-actions .pixel-btn {
-    width: 32%;
 }
 
 /* Кнопки действий на нижней панели */
